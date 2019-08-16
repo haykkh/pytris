@@ -50,6 +50,13 @@ class Block:
         
         if ((self.y + 8) < pyxel.height):
             self.y = (self.y + 1)
+
+            if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
+                self.x = max(0, self.x - 4)
+            
+            if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
+                self.x = min(self.x + 4, pyxel.width - self.width)
+
         else:
             self.falling = False
 
