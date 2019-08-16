@@ -6,6 +6,7 @@ authors = ["Hayk Khachatryan <hi@hayk.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
+pyxel = "^1.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
