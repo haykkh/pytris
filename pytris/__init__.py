@@ -14,6 +14,7 @@ __license__ = "MIT"
 #                       #
 #########################
 
+
 class Block:
     """The blocks we know and love.
 
@@ -39,8 +40,10 @@ class Block:
         if ((self.y + 8) < pyxel.height):
             self.y = (self.y + 1)
 
+
 class App:
     """Main app
+    
     """
     blockData = [     # List of [u, w, h] (see Block.__doc__) for the 7 blocks
         [0,  12, 4],  # I
@@ -53,6 +56,12 @@ class App:
     ]
     
     def __init__(self):
+        """
+            - inits the window
+            - loads the graphics
+            - adds a block
+            - runs update & draw
+        """
 
         # init 160 by 120 space
         pyxel.init(160, 120)
