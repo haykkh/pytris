@@ -24,14 +24,15 @@ class Block:
             Initialises a block at (random x location, top of window)
 
             Attributes:
-                x (int):        x position of block in window
+                x (int):        randomly assigned x position of block in window
+                                (in multiples of 4)
                 y (int):        y position of block in window
                 u (int):        x location of start of block in image bank
                 width (int):    width of block
                 height (int):   height of block
                 falling (Bool): whether or not block is still falling
         """
-        self.x = random.randrange(pyxel.width - w)
+        self.x = random.randrange((pyxel.width - w)/4) * 4
         self.y = 0
         self.u = u
         self.width = w
