@@ -27,6 +27,7 @@ class Block:
                 x (int):        randomly assigned x position of block in window
                                 (in multiples of 4)
                 y (int):        y position of block in window
+                vy (int):       frame gap between 4 pixel drops
                 u (int):        x location of start of block in image bank
                 width (int):    width of block
                 height (int):   height of block
@@ -34,6 +35,7 @@ class Block:
         """
         self.x = random.randrange((pyxel.width - w)/4) * 4
         self.y = 0
+        self.vy = 32
         self.u = u
         self.width = w
         self.height = h
@@ -49,13 +51,19 @@ class Block:
         """
         
         if ((self.y + 8) < pyxel.height):
-            self.y = (self.y + 1)
+
+            # self.vy: frame gap between drops 
+            if (pyxel.frame_count % self.vy) == 0:
+                self.y = (self.y + 4)
 
             if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
                 self.x = max(0, self.x - 4)
             
             if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
                 self.x = min(self.x + 4, pyxel.width - self.width)
+
+            if pyxel.btnp(pyxel.KEY_DOWN):
+                self.vy = 1
 
         else:
             self.falling = False
@@ -66,13 +74,13 @@ class App:
     
     """
     blockData = [     # List of [u, w, h] (see Block.__doc__) for the 7 blocks
-        [0,  12, 4],  # I
-        [12, 12, 8],  # J
-        [24, 12, 8],  # L
-        [36,  8, 8],  # O
-        [44, 12, 8],  # S
-        [56, 12, 8],  # T
-        [68, 12, 8]   # Z
+        [0,  16, 4],  # I
+        [16, 12, 8],  # J
+        [28, 12, 8],  # L
+        [40,  8, 8],  # O
+        [48, 12, 8],  # S
+        [60, 12, 8],  # T
+        [72, 12, 8]   # Z
     ]
     
     def __init__(self):
