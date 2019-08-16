@@ -24,21 +24,33 @@ class Block:
             Initialises a block at (random x location, top of window)
 
             Attributes:
-                u (int):      x location of start of block in image bank
-                width (int):  width of block
-                height (int): height of block
+                x (int):        x position of block in window
+                y (int):        y position of block in window
+                u (int):        x location of start of block in image bank
+                width (int):    width of block
+                height (int):   height of block
+                falling (Bool): whether or not block is still falling
         """
-        self.x = random.randrange(148)
+        self.x = random.randrange(pyxel.width - w)
         self.y = 0
         self.u = u
         self.width = w
         self.height = h
+        self.falling = True
 
     def update(self):
+        """Updates block
 
-        # if not at bottom of screen, block falls
+            if not at bottom of screen:
+                falls
+            else
+                not falling
+        """
+        
         if ((self.y + 8) < pyxel.height):
             self.y = (self.y + 1)
+        else:
+            self.falling = False
 
 
 class App:
@@ -64,7 +76,7 @@ class App:
         """
 
         # init 160 by 120 space
-        pyxel.init(160, 120)
+        pyxel.init(120, 80)
 
         # load graphics
         pyxel.load("blocks.pyxel")
@@ -76,9 +88,10 @@ class App:
 
     def update(self):
 
-        # every 10 frames generate a new block
-        if (pyxel.frame_count % 10) == 0:
+        # generates a new block if last block has stopped falling
+        if not self.blocks[-1].falling:
             self.blocks.append(Block(*App.blockData[random.randrange(7)]))
+            self.blocks[-1].falling = True
 
         # update all blocks
         for block in self.blocks:
