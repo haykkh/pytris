@@ -63,7 +63,6 @@ class Block:
 
         else:
             self.falling = False
-            print(self.x, self.y)
 
 
 class App:
@@ -117,13 +116,54 @@ class App:
         
         # clear screen w/ black
         pyxel.cls(0)
+        for (x, y), (w, h), col in blockDatann[6]:
+            pyxel.rect(y, x, h, w, col)
 
         for block in self.blocks:
             pyxel.blt(block.x, block.y, 0, block.u, 0, block.width, block.height, 0)
 
 
+#            rect(x, y, w, h, col)
+################
+#    blocks    #
+################
 
+blockDatann = [
+    [  # I
+        [(0, 0), (15, 3), 12]
+    ],
+    [  # J
+        [(0, 0), (11, 3), 8],
+        [(8, 4),  (11, 7), 8]
+    ],
+    [  # L
+        [(0, 0), (11, 3), 11],
+        [(0, 4),  (3, 7), 11]
+    ],
+    [  # O
+        [(0, 0), (7, 7), 9]
+    ],
+    [  # S
+        [(0, 0), (7, 3), 3],
+        [(4, 4), (11, 7), 3]
+    ],
+    [  # T
+        [(0, 0), (11, 3), 10],
+        [(4, 4),  (7, 7), 10]
+    ],
+    [  # z
+        [(4, 0), (11, 3), 14],
+        [(0, 4), (7, 7), 14]
+    ]
+]
 
+# I
+# J
+# L
+# O
+# S
+# T
+# Z
 ##################
 #    run baby    #
 ##################
