@@ -1,18 +1,14 @@
 import math
-import random
+from random import randrange
 import pyxel
 
 __author__ = "Hayk Khachatryan"
 __version__ = '0.1.0'
 __license__ = "MIT"
 
-#########################
-#                       #
-#                       #
-#        classes        #
-#                       #
-#                       #
-#########################
+#################
+#    classes    #
+#################
 
 
 class Block:
@@ -33,7 +29,7 @@ class Block:
                 falling (Bool): whether or not block is still falling
         """
 
-        self.x = random.randrange((pyxel.width - w)/4) * 4
+        self.x = randrange((pyxel.width - w)/4) * 4
         self.y = 0
         self.vy = 32
         self.u = u
@@ -98,7 +94,7 @@ class App:
         pyxel.load("blocks.pyxel")
 
         # init a random block
-        self.blocks = [Block(*App.blockData[random.randrange(7)])]
+        self.blocks = [Block(*App.blockData[randrange(7)])]
 
         pyxel.run(self.update, self.draw)
 
@@ -106,7 +102,7 @@ class App:
 
         # generates a new block if last block has stopped falling
         if not self.blocks[-1].falling:
-            self.blocks.append(Block(*App.blockData[random.randrange(7)]))
+            self.blocks.append(Block(*App.blockData[randrange(7)]))
             self.blocks[-1].falling = True
 
         # update all blocks
@@ -128,12 +124,9 @@ class App:
 
 
 
-#########################
-#                       #
-#      run baby         #
-#                       #
-#                       #
-#########################
+##################
+#    run baby    #
+##################
 
 if __name__ == '__main__':
     
