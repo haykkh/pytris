@@ -50,7 +50,7 @@ class Block:
                 not falling
         """
         
-        if ((self.y + 8) < pyxel.height):
+        if ((self.y + self.height) < pyxel.height):
 
             # self.vy: frame gap between drops 
             if (pyxel.frame_count % self.vy) == 0:
