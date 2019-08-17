@@ -16,9 +16,8 @@ __license__ = "MIT"
 
 
 class Block:
-    """The blocks we know and love.
+    """The blocks we know and love."""
 
-    """
     def __init__(self, u, w, h):
         """
             Initialises a block at (random x location, top of window)
@@ -33,6 +32,7 @@ class Block:
                 height (int):   height of block
                 falling (Bool): whether or not block is still falling
         """
+
         self.x = random.randrange((pyxel.width - w)/4) * 4
         self.y = 0
         self.vy = 32
@@ -52,7 +52,7 @@ class Block:
         
         if ((self.y + self.height) < pyxel.height):
 
-            # self.vy: frame gap between drops 
+            # self.vy: frame gap between drops
             if (pyxel.frame_count % self.vy) == 0:
                 self.y = (self.y + 4)
 
@@ -67,12 +67,12 @@ class Block:
 
         else:
             self.falling = False
+            print(self.x, self.y)
 
 
 class App:
-    """Main app
-    
-    """
+    """Main app"""
+
     blockData = [     # List of [u, w, h] (see Block.__doc__) for the 7 blocks
         [0,  16, 4],  # I
         [16, 12, 8],  # J
@@ -82,7 +82,7 @@ class App:
         [60, 12, 8],  # T
         [72, 12, 8]   # Z
     ]
-    
+   
     def __init__(self):
         """
             - inits the window
