@@ -33,7 +33,7 @@ class Block:
                 vy (int):       frame interval between 4 pixel drops
                 r (list):       list of rectangles representing block [(x, y), (w, h), col] values
                     x (int):    x coord of starting point of rectangle
-                    w (int):    x coord of ending point of rectangle  
+                    w (int):    x coord of ending point of rectangle
                     y (int):    y coord of starting point of rectangle
                     h (int):    y coord of ending point of rectangle
                     col (int):  color of block
@@ -52,7 +52,7 @@ class Block:
 
         # Add block to posMap
         mapAdd(self, posMap)
-    
+
     def update(self):
         """Updates block
 
@@ -61,9 +61,9 @@ class Block:
             else
                 not falling
         """
-        
-        if ((self.y + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
 
+        if ((self.y + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
+            
             # self.vy: frame gap between drops
             if (pyxel.frame_count % self.vy) == 0:
                 mapDel(self, posMap)
@@ -74,7 +74,7 @@ class Block:
                 mapDel(self, posMap)
                 self.x = max(0, self.x - 4)
                 mapAdd(self, posMap)
-            
+
             if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
                 mapDel(self, posMap)
                 self.x = min(self.x + 4, pyxel.width - self.width)
@@ -85,7 +85,7 @@ class Block:
 
         else:
             self.falling = False
-    
+
     def draw(self):
         """Draws blocks rectangle by rectangle (from self.rects)"""
 
@@ -95,7 +95,7 @@ class Block:
 
 class App:
     """Main app"""
-   
+
     def __init__(self):
         """
             - inits the window
@@ -130,7 +130,7 @@ class App:
 
         # clear screen w/ black
         pyxel.cls(0)
-        
+
         # draw all blocks
         for block in self.blocks:
             block.draw()
@@ -140,7 +140,7 @@ class App:
 #    blocks    #
 ################
 
-blockDatann = [ # (x, y), (w, h), col
+blockDatann = [  # (x, y), (w, h), col
     [  # I
         [(0, 0), (15, 3), 12]
     ],
@@ -180,12 +180,17 @@ posMap = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight // 4)
 
 def mapCheck(block, posMap, changeX, changeY):
     """Checks if moving block to new position (+changeX, +changeY) will clash with existing block"""
+    mapDel(block, posMap)
     for (x, y), (w, h), col in block.rects:
         for xx in range(x, w, 4):
             for yy in range(y, h, 4):
-                if not posMap[changeY + (yy + block.y)//4][changeX + (xx + block.x)//4]:
-                    return False
-    return True
+
+                if posMap[changeY + (yy + block.y)//4][changeX + (xx + block.x)//4]:
+
+                    mapAdd(block, posMap)
+                    return True
+    mapAdd(block, posMap)
+    return False
 
 
 def mapAdd(block, posMap):
@@ -228,4 +233,3 @@ def setWidthHeight(block):
 if __name__ == '__main__':
 
     App()
-
