@@ -226,6 +226,6 @@ def setWidthHeight(block):
 ##################
 
 if __name__ == '__main__':
-    
+
     App()
 
