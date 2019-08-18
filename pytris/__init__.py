@@ -22,7 +22,7 @@ windowWidth = 80
 class Block:
     """The blocks we know and love."""
 
-    def __init__(self, r):
+    def __init__(self, c):
         """
             Initialises a block at (random x location, top of window)
 
@@ -41,14 +41,17 @@ class Block:
                 height (int):   height of block
                 falling (Bool): whether or not block is still falling
         """
-        self.rects = r
+        self.coords = c
 
-        setWidthHeight(self)
+        self.width = (max(list(zip(*self.coords))[0]) + 1) * 4
+        self.height = (max(list(zip(*self.coords))[1]) + 1) * 4
 
-        self.x = randrange((pyxel.width - self.width)/4) * 4
+        self.x = randrange((pyxel.width - self.width)/4)
         self.y = 0
         self.vy = 32
         self.falling = True
+
+        newCoords(self)
 
         # Add block to posMap
         mapAdd(self, posMap)
@@ -62,35 +65,36 @@ class Block:
                 not falling
         """
 
-        if ((self.y + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
+        if ((self.y + self.height) < pyxel.height):
 
             # self.vy: frame gap between drops
             if (pyxel.frame_count % self.vy) == 0:
                 mapDel(self, posMap)
                 self.y = (self.y + 4)
                 mapAdd(self, posMap)
+                print(posMap)
 
             if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
                 mapDel(self, posMap)
                 self.x = max(0, self.x - 4)
                 mapAdd(self, posMap)
+                print(posMap)
 
             if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
                 mapDel(self, posMap)
                 self.x = min(self.x + 4, pyxel.width - self.width)
                 mapAdd(self, posMap)
+                print(posMap)
 
             if pyxel.btnp(pyxel.KEY_DOWN):
                 self.vy = 1
 
         else:
             self.falling = False
+            print('endfall')
 
     def draw(self):
         """Draws blocks rectangle by rectangle (from self.rects)"""
-
-        for (x, y), (w, h), col in self.rects:
-            pyxel.rect(x + self.x, y + self.y, w + self.x, h + self.y, col)
 
 
 class App:
@@ -107,7 +111,7 @@ class App:
         pyxel.init(windowWidth, windowHeight)
 
         # init a random block
-        self.blocks = [Block(blockDatann[randrange(7)])]
+        self.blocks = [Block(blockData[randrange(7)])]
 
         pyxel.run(self.update, self.draw)
 
@@ -115,7 +119,7 @@ class App:
 
         # generates a new block if last block has stopped falling
         if not self.blocks[-1].falling:
-            self.blocks.append(Block(blockDatann[randrange(7)]))
+            self.blocks.append(Block(blockData[randrange(7)]))
             self.blocks[-1].falling = True
 
         # update all blocks
@@ -195,36 +199,21 @@ def mapCheck(block, posMap, changeX, changeY):
 
 def mapAdd(block, posMap):
     """Adds block to posMap"""
-    for (x, y), (w, h), col in block.rects:
-        for xx in range(x, w, 4):
-            for yy in range(y, h, 4):
-                posMap[(yy + block.y)//4][(xx + block.x)//4] = 1
+    for (x, y) in block.coords:
+        posMap[y][x] = 1
 
 
 def mapDel(block, posMap):
     """Removes block from posMap"""
-    for (x, y), (w, h), col in block.rects:
-        for xx in range(x, w, 4):
-            for yy in range(y, h, 4):
-                posMap[(yy + block.y)//4][(xx + block.x)//4] = 0
+    for (x, y) in block.coords:
+        posMap[y][x] = 0
 
 
-##############
-#    misc    #
-##############
-
-def setWidthHeight(block):
-    """Set's width and height of a Block() object"""
-    block.height = 0
-    block.width = 0
-
-    for (x, y), (w, h), col in block.rects:
-        block.width = max(w, block.width)
-        block.height = max(h, block.height)
-
-    block.width += 1
-    block.height += 1
-
+def newCoords(block):
+    block.coords = [
+        (coord[0] + block.x, coord[1] + block.y)
+        for coord in block.coords
+        ]
 
 ##################
 #    run baby    #
