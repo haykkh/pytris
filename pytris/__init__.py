@@ -51,7 +51,7 @@ class Block:
         self.vy = 32
         self.falling = True
 
-        newCoords(self)
+        self.color = randrange(2, 15)
 
         # Add block to posMap
         mapAdd(self, posMap)
@@ -65,36 +65,44 @@ class Block:
                 not falling
         """
 
-        if ((self.y + self.height) < pyxel.height):
+        if (((self.y * 4) + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
 
             # self.vy: frame gap between drops
             if (pyxel.frame_count % self.vy) == 0:
                 mapDel(self, posMap)
-                self.y = (self.y + 4)
+                self.y = (self.y + 1)
                 mapAdd(self, posMap)
-                print(posMap)
 
             if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
                 mapDel(self, posMap)
-                self.x = max(0, self.x - 4)
+                self.x = max(0, self.x - 1)
                 mapAdd(self, posMap)
-                print(posMap)
 
             if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
                 mapDel(self, posMap)
-                self.x = min(self.x + 4, pyxel.width - self.width)
+                self.x = min(self.x + 1, (pyxel.width - self.width) // 4)
                 mapAdd(self, posMap)
-                print(posMap)
 
             if pyxel.btnp(pyxel.KEY_DOWN):
                 self.vy = 1
 
+            if pyxel.btnp(pyxel.KEY_UP):
+                mapDel(self, posMap)
+                rotate(self)
+                mapAdd(self, posMap)
+
         else:
             self.falling = False
-            print('endfall')
 
     def draw(self):
         """Draws blocks rectangle by rectangle (from self.rects)"""
+        for (x, y) in self.coords:
+            pyxel.rect(
+                (x + self.x) * 4,
+                (y + self.y) * 4,
+                (x + self.x) * 4 + 3,
+                (y + self.y) * 4 + 3,
+                self.color)
 
 
 class App:
@@ -184,15 +192,12 @@ posMap = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight // 4)
 
 def mapCheck(block, posMap, changeX, changeY):
     """Checks if moving block to new position (+changeX, +changeY) will clash with existing block"""
+
     mapDel(block, posMap)
-    for (x, y), (w, h), col in block.rects:
-        for xx in range(x, w, 4):
-            for yy in range(y, h, 4):
-
-                if posMap[changeY + (yy + block.y)//4][changeX + (xx + block.x)//4]:
-
-                    mapAdd(block, posMap)
-                    return True
+    for (x, y) in block.coords:
+        if posMap[y + block.y + changeY][x + block.x + changeX]:
+            mapAdd(block, posMap)
+            return True
     mapAdd(block, posMap)
     return False
 
@@ -200,20 +205,29 @@ def mapCheck(block, posMap, changeX, changeY):
 def mapAdd(block, posMap):
     """Adds block to posMap"""
     for (x, y) in block.coords:
-        posMap[y][x] = 1
+        posMap[y + block.y][x + block.x] = 1
 
 
 def mapDel(block, posMap):
     """Removes block from posMap"""
     for (x, y) in block.coords:
-        posMap[y][x] = 0
+        posMap[y + block.y][x + block.x] = 0
 
 
-def newCoords(block):
+def rotate(block):
+    # https://stackoverflow.com/questions/9389453/rotation-matrix-with-center
+    centerX = block.width // 8
+    centerY = block.height // 8
     block.coords = [
-        (coord[0] + block.x, coord[1] + block.y)
-        for coord in block.coords
-        ]
+        (
+            centerX - y + centerY,
+            centerY + x - centerX
+            )
+        for (x, y) in block.coords]
+    h = block.height
+    block.height = block.width
+    block.width = h
+
 
 ##################
 #    run baby    #
