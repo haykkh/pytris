@@ -41,10 +41,10 @@ class Block:
                 height (int):   height of block
                 falling (Bool): whether or not block is still falling
         """
-        self.coords = c
+        self.coords = c[:4]
+        self.center = c[4]
 
-        self.width = (max(list(zip(*self.coords))[0]) + 1) * 4
-        self.height = (max(list(zip(*self.coords))[1]) + 1) * 4
+        widthAndHeight(self)
 
         self.x = randrange((pyxel.width - self.width)/4)
         self.y = 0
@@ -75,7 +75,7 @@ class Block:
 
             if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
                 mapDel(self, posMap)
-                self.x = max(0, self.x - 1)
+                self.x = max(-self.left, self.x - 1)
                 mapAdd(self, posMap)
 
             if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
@@ -87,9 +87,12 @@ class Block:
                 self.vy = 1
 
             if pyxel.btnp(pyxel.KEY_UP):
-                mapDel(self, posMap)
-                rotate(self)
-                mapAdd(self, posMap)
+                if not self.center:
+                    None
+                else:
+                    mapDel(self, posMap)
+                    rotate(self)
+                    mapAdd(self, posMap)
 
         else:
             self.falling = False
@@ -154,31 +157,45 @@ class App:
 
 blockData = [  # (x, y)
     [  # I
-        (0, 0), (1, 0), (2, 0), (3, 0)
+        (0, 1), (1, 1), (2, 1), (3, 1),
+
+        (2, 2)
     ],
     [  # J
-        (0, 0), (1, 0), (2, 0),
-                        (2, 1)
+        (0, 0),
+        (0, 1), (1, 1), (2, 1),
+
+        (1, 1)
     ],
     [  # L
-        (0, 0), (1, 0), (2, 0),
-        (0, 1)
+                        (2, 0),
+        (0, 1), (1, 1), (2, 1),
+
+        (1, 1)
     ],
     [  # O
         (0, 0), (1, 0),
-        (0, 1), (1, 1)
+        (0, 1), (1, 1),
+
+        False
     ],
     [  # S
-        (0, 0), (1, 0),
-                (1, 1), (2, 1)
+                (1, 0), (2, 0),
+        (0, 1), (1, 1),
+
+        (1, 1)
     ],
     [  # T
-        (0, 0), (1, 0), (2, 0),
-                (1, 1)
+                (1, 0),
+        (0, 1), (1, 1), (2, 1),
+
+        (1, 1)
     ],
     [  # Z
-                (1, 0), (2, 0),
-        (0, 1), (1, 1)
+        (0, 0), (1, 0),
+                (1, 1), (2, 1),
+
+        (1, 1)
     ]
 ]
 
@@ -199,6 +216,7 @@ def mapCheck(block, posMap, changeX, changeY):
             mapAdd(block, posMap)
             return True
     mapAdd(block, posMap)
+
     return False
 
 
@@ -215,19 +233,29 @@ def mapDel(block, posMap):
 
 
 def rotate(block):
-    # https://stackoverflow.com/questions/9389453/rotation-matrix-with-center
-    centerX = block.width // 8
-    centerY = block.height // 8
+    # SRS
     block.coords = [
         (
-            centerX - y + centerY,
-            centerY + x - centerX
+            int(block.center[0] - y + block.center[1]),
+            int(block.center[1] + x - block.center[0])
             )
-        for (x, y) in block.coords]
-    h = block.height
-    block.height = block.width
-    block.width = h
+        for (x, y) in block.coords[:4]]
+    widthAndHeight(block)
 
+
+def widthAndHeight(block):
+    block.left = min(list(zip(*block.coords))[0])
+    block.right = max(list(zip(*block.coords))[0])
+    block.top = min(list(zip(*block.coords))[1])
+    block.bottom = max(list(zip(*block.coords))[1])
+    block.width = (
+        block.right +
+        1
+        ) * 4
+    block.height = (
+        block.bottom +
+        1
+        ) * 4
 
 ##################
 #    run baby    #
