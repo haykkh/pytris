@@ -72,7 +72,7 @@ class Block:
             mapAdd(self, posMap)
 
     def keyRight(self):
-        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):
+        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):          
             mapDel(self, posMap)
             self.x = min(self.x + 1,  -self.left + (pyxel.width - self.width) // 4)
             mapAdd(self, posMap)
@@ -95,8 +95,7 @@ class Block:
                 not falling
         """
 
-        if (((self.y * 4) + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
-
+        if ((((self.y + self.top) * 4) + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
             self.drop()
             self.keyLeft()
             self.keyRight()
@@ -231,10 +230,12 @@ def mapCheck(block, posMap, changeX, changeY):
 
     mapDel(block, posMap)
     for (x, y) in block.coords:
-        if x + block.x + changeX < len(posMap[0]):
+        if x + block.x + changeX < len(posMap[0]) and y + block.y + changeY < len(posMap):
             if posMap[y + block.y + changeY][x + block.x + changeX]:
                 mapAdd(block, posMap)
                 return True
+        else:
+            return True
     mapAdd(block, posMap)
 
     return False
@@ -269,11 +270,11 @@ def widthAndHeight(block):
     block.top = min(list(zip(*block.coords))[1])
     block.bottom = max(list(zip(*block.coords))[1])
     block.width = (
-        block.right +
+        block.right - block.left +
         1
         ) * 4
     block.height = (
-        block.bottom +
+        block.bottom - block.top +
         1
         ) * 4
 
