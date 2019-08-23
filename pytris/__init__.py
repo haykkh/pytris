@@ -56,6 +56,36 @@ class Block:
         # Add block to posMap
         mapAdd(self, posMap)
 
+        self.frame = pyxel.frame_count
+
+    def drop(self):
+        # self.vy: frame gap between drops
+        if (pyxel.frame_count % self.vy) == 0:
+            mapDel(self, posMap)
+            self.y = (self.y + 1)
+            mapAdd(self, posMap)
+
+    def keyLeft(self):
+        if pyxel.btnp(pyxel.KEY_LEFT, 10, 1) and not mapCheck(self, posMap, -1, 0):
+            mapDel(self, posMap)
+            self.x = max(-self.left, self.x - 1)
+            mapAdd(self, posMap)
+
+    def keyRight(self):
+        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):
+            mapDel(self, posMap)
+            self.x = min(self.x + 1,  -self.left + (pyxel.width - self.width) // 4)
+            mapAdd(self, posMap)
+
+    def keyUp(self):
+        if pyxel.btnp(pyxel.KEY_UP):
+            if not self.center:
+                None
+            else:
+                mapDel(self, posMap)
+                rotate(self)
+                mapAdd(self, posMap)
+
     def update(self):
         """Updates block
 
@@ -67,35 +97,24 @@ class Block:
 
         if (((self.y * 4) + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
 
-            # self.vy: frame gap between drops
-            if (pyxel.frame_count % self.vy) == 0:
-                mapDel(self, posMap)
-                self.y = (self.y + 1)
-                mapAdd(self, posMap)
-
-            if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
-                mapDel(self, posMap)
-                self.x = max(-self.left, self.x - 1)
-                mapAdd(self, posMap)
-
-            if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
-                mapDel(self, posMap)
-                self.x = min(self.x + 1, (pyxel.width - self.width) // 4)
-                mapAdd(self, posMap)
+            self.drop()
+            self.keyLeft()
+            self.keyRight()
+            self.keyUp()
 
             if pyxel.btnp(pyxel.KEY_DOWN):
                 self.vy = 1
 
-            if pyxel.btnp(pyxel.KEY_UP):
-                if not self.center:
-                    None
-                else:
-                    mapDel(self, posMap)
-                    rotate(self)
-                    mapAdd(self, posMap)
+            self.frame = pyxel.frame_count
 
         else:
-            self.falling = False
+
+            if pyxel.frame_count < self.frame + 16:
+                self.keyLeft()
+                self.keyRight()
+                self.keyUp()
+            else:
+                self.falling = False
 
     def draw(self):
         """Draws blocks rectangle by rectangle (from self.rects)"""
@@ -212,9 +231,10 @@ def mapCheck(block, posMap, changeX, changeY):
 
     mapDel(block, posMap)
     for (x, y) in block.coords:
-        if posMap[y + block.y + changeY][x + block.x + changeX]:
-            mapAdd(block, posMap)
-            return True
+        if x + block.x + changeX < len(posMap[0]):
+            if posMap[y + block.y + changeY][x + block.x + changeX]:
+                mapAdd(block, posMap)
+                return True
     mapAdd(block, posMap)
 
     return False
@@ -239,7 +259,7 @@ def rotate(block):
             int(block.center[0] - y + block.center[1]),
             int(block.center[1] + x - block.center[0])
             )
-        for (x, y) in block.coords[:4]]
+        for (x, y) in block.coords]
     widthAndHeight(block)
 
 
