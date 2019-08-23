@@ -97,9 +97,7 @@ class Block:
                                     clockwise      ->  -1
                                     anti-clockwise ->  1
         """
-        if not self.center:
-            None
-        else:
+        if self.center:
             mapDel(self, posMap)
             rotate(self, direction)
             mapAdd(self, posMap)
