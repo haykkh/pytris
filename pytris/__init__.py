@@ -1,5 +1,5 @@
 import math
-from random import randrange
+from random import randrange, sample
 import pyxel
 
 __author__ = "Hayk Khachatryan"
@@ -148,7 +148,8 @@ class App:
         pyxel.init(windowWidth, windowHeight)
 
         # init a random block
-        self.blocks = [Block(blockData[randrange(7)])]
+        self.bag = sample(list(range(7)), 7)
+        self.blocks = [Block(blockData[self.bag.pop()])]
 
         pyxel.run(self.update, self.draw)
 
@@ -156,7 +157,10 @@ class App:
 
         # generates a new block if last block has stopped falling
         if not self.blocks[-1].falling:
-            self.blocks.append(Block(blockData[randrange(7)]))
+            if not self.bag:
+                self.bag = sample(list(range(7)), 7)
+
+            self.blocks.append(Block(blockData[self.bag.pop()]))
             self.blocks[-1].falling = True
 
         # update all blocks
