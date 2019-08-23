@@ -25,25 +25,27 @@ class Block:
     def __init__(self, c):
         """
             Initialises a block at (random x location, top of window)
+            in a random color
 
             Attributes:
+                coords (list):  list of coordinates of block in form
+                                [(x, y), (x, y) ... (x, y), (cX, cY)]
+                    (x, y) (int):    tuple representing x & y coord
+                    (cX, cY) (int):  tuple representing center for rotation
                 x (int):        randomly assigned x position of block in window
                                 (in multiples of 4)
                 y (int):        y position of block in window
                 vy (int):       frame interval between 4 pixel drops
-                r (list):       list of rectangles representing block [(x, y), (w, h), col] values
-                    x (int):    x coord of starting point of rectangle
-                    w (int):    x coord of ending point of rectangle
-                    y (int):    y coord of starting point of rectangle
-                    h (int):    y coord of ending point of rectangle
-                    col (int):  color of block
+                color (int):    color of block (default pyxel color values)
                 width (int):    width of block
                 height (int):   height of block
+                frame (int):    frame of last update
                 falling (Bool): whether or not block is still falling
         """
         self.coords = c[:4]
         self.center = c[4]
 
+        # init width and height of block
         widthAndHeight(self)
 
         self.x = randrange((pyxel.width - self.width)/4)
@@ -51,6 +53,7 @@ class Block:
         self.vy = 32
         self.falling = True
 
+        # init random color
         self.color = randrange(2, 15)
 
         # Add block to posMap
@@ -59,25 +62,41 @@ class Block:
         self.frame = pyxel.frame_count
 
     def drop(self):
-        # self.vy: frame gap between drops
+        """Drops block 4 pixels if frame_count is a multiple of self.vy"""
         if (pyxel.frame_count % self.vy) == 0:
             mapDel(self, posMap)
             self.y = (self.y + 1)
             mapAdd(self, posMap)
 
     def keyLeft(self):
+        """Moves left
+
+            if left key pressed & block can move left, move left
+
+        """
         if pyxel.btnp(pyxel.KEY_LEFT, 10, 1) and not mapCheck(self, posMap, -1, 0):
             mapDel(self, posMap)
             self.x = max(-self.left, self.x - 1)
             mapAdd(self, posMap)
 
     def keyRight(self):
+        """Moves right
+
+            if right key pressed & block can move right, move right
+        """
         if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):
             mapDel(self, posMap)
             self.x = min(self.x + 1,  -self.left + (pyxel.width - self.width) // 4)
             mapAdd(self, posMap)
 
     def rotater(self, direction):
+        """Rotates in direction (unless 'O' block)
+
+            Args:
+                direction (int):  direction of rotation
+                                    clockwise      ->  -1
+                                    anti-clockwise ->  1
+        """
         if not self.center:
             None
         else:
@@ -86,10 +105,12 @@ class Block:
             mapAdd(self, posMap)
 
     def keyUp(self):
+        """Rotate clockwise if up key pressed"""
         if pyxel.btnp(pyxel.KEY_UP):
             self.rotater(-1)
 
     def keyZ(self):
+        """Rotate anti-clockwise if Z key pressed"""
         if pyxel.btnp(pyxel.KEY_Z):
             self.rotater(1)
 
@@ -98,17 +119,23 @@ class Block:
 
             if not at bottom of screen OR clashing with other block:
                 falls
+                checks for any of the keys pressed
+                updates block's frame counter
             else
-                not falling
+                grace period of 16 frames where it can still move
+                then -> not falling
         """
 
         if ((((self.y + self.top) * 4) + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
+
             self.drop()
+
             self.keyLeft()
             self.keyRight()
             self.keyUp()
             self.keyZ()
 
+            # soft drop, 4 pixels per frame update
             if pyxel.btnp(pyxel.KEY_DOWN):
                 self.vy = 1
 
@@ -116,10 +143,12 @@ class Block:
 
         else:
 
+            # if in grace period
             if pyxel.frame_count < self.frame + 16:
                 self.keyLeft()
                 self.keyRight()
                 self.keyUp()
+                self.keyZ()
             else:
                 self.falling = False
 
@@ -141,14 +170,17 @@ class App:
         """
             - inits the window
             - loads the graphics
+            - generates random 7 bag
             - adds a block
             - runs update & draw
         """
 
         pyxel.init(windowWidth, windowHeight)
 
-        # init a random block
+        # generates randomly ordered list of [0, 1, 2, 3, 4, 5, 6, 7]
         self.bag = sample(list(range(7)), 7)
+
+        # generates a block from last element of self.bag into self.blocks
         self.blocks = [Block(blockData[self.bag.pop()])]
 
         pyxel.run(self.update, self.draw)
@@ -157,10 +189,15 @@ class App:
 
         # generates a new block if last block has stopped falling
         if not self.blocks[-1].falling:
+
+            # if self.bag empty, generate new bag
             if not self.bag:
                 self.bag = sample(list(range(7)), 7)
 
+            # generate new block
             self.blocks.append(Block(blockData[self.bag.pop()]))
+
+            # set it to fall
             self.blocks[-1].falling = True
 
         # update all blocks
@@ -185,7 +222,11 @@ class App:
 #    blocks    #
 ################
 
-blockData = [  # (x, y)
+""" (x, y), (x, y), (x, y), (x, y)
+
+    (centerX, centerY)
+"""
+blockData = [
     [  # I
         (0, 1), (1, 1), (2, 1), (3, 1),
 
@@ -229,27 +270,49 @@ blockData = [  # (x, y)
     ]
 ]
 
-#############
-#    map    #
-#############
+###################
+#    functions    #
+###################
 
-# generates 2D array consisting of 0s
+""" Map of window
+
+    Starts off with all 0s
+    then updated to contain a 1 where a block is present
+"""
 posMap = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight // 4)]
 
 
 def mapCheck(block, posMap, changeX, changeY):
-    """Checks if moving block to new position (+changeX, +changeY) will clash with existing block"""
+    """ Checks if moving block to new position (+changeX, +changeY)
+        will clash with existing block
 
+        Args:
+            posMap (list)
+            changeX (int): change in x direction
+            changeY (int): change in y direction
+
+        Returns:
+            bool: True if clash, False otherwise
+    """
+
+    # remove block from posMap
     mapDel(block, posMap)
     for (x, y) in block.coords:
+
+        # check if there will not be index error
         if x + block.x + changeX < len(posMap[0]) and y + block.y + changeY < len(posMap):
+
+            """ if a block exists in (x + block.x + changeX, y + block.y + changeY)
+                    add back to posMap
+                    return True
+            """
             if posMap[y + block.y + changeY][x + block.x + changeX]:
                 mapAdd(block, posMap)
                 return True
-        else:
+        else:  # if index error -> return True
             return True
-    mapAdd(block, posMap)
 
+    mapAdd(block, posMap)
     return False
 
 
@@ -266,7 +329,19 @@ def mapDel(block, posMap):
 
 
 def rotate(block, direction):
-    # SRS
+    """ Rotates blocks around their defined center position
+
+        - translates (- centerX, - centerY)
+        - rotates in direction
+            (-1 for clockwise, 1 for anti-clockwise)
+        - translates back (centerX, centerY)
+        - recalculates width and height
+
+        Args:
+            direction (int): direction of rotation
+                                clockwise      -> -1
+                                anti-clockwise -> 1
+    """
     block.coords = [
         (
             int(block.center[0] + direction * (y - block.center[1])),
@@ -277,6 +352,9 @@ def rotate(block, direction):
 
 
 def widthAndHeight(block):
+    """ Finds left, right, top, bottom of block
+        then uses that to calculate block width and height
+    """
     block.left = min(list(zip(*block.coords))[0])
     block.right = max(list(zip(*block.coords))[0])
     block.top = min(list(zip(*block.coords))[1])
