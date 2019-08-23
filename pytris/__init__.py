@@ -72,19 +72,26 @@ class Block:
             mapAdd(self, posMap)
 
     def keyRight(self):
-        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):          
+        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):
             mapDel(self, posMap)
             self.x = min(self.x + 1,  -self.left + (pyxel.width - self.width) // 4)
             mapAdd(self, posMap)
 
+    def rotater(self, direction):
+        if not self.center:
+            None
+        else:
+            mapDel(self, posMap)
+            rotate(self, direction)
+            mapAdd(self, posMap)
+
     def keyUp(self):
         if pyxel.btnp(pyxel.KEY_UP):
-            if not self.center:
-                None
-            else:
-                mapDel(self, posMap)
-                rotate(self)
-                mapAdd(self, posMap)
+            self.rotater(-1)
+
+    def keyZ(self):
+        if pyxel.btnp(pyxel.KEY_Z):
+            self.rotater(1)
 
     def update(self):
         """Updates block
@@ -100,6 +107,7 @@ class Block:
             self.keyLeft()
             self.keyRight()
             self.keyUp()
+            self.keyZ()
 
             if pyxel.btnp(pyxel.KEY_DOWN):
                 self.vy = 1
@@ -253,12 +261,12 @@ def mapDel(block, posMap):
         posMap[y + block.y][x + block.x] = 0
 
 
-def rotate(block):
+def rotate(block, direction):
     # SRS
     block.coords = [
         (
-            int(block.center[0] - y + block.center[1]),
-            int(block.center[1] + x - block.center[0])
+            int(block.center[0] + direction * (y - block.center[1])),
+            int(block.center[1] + direction * (block.center[0] - x))
             )
         for (x, y) in block.coords]
     widthAndHeight(block)
