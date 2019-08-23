@@ -45,7 +45,7 @@ class Block:
             else
                 not falling
         """
-        
+
         if ((self.y + self.height) < pyxel.height):
 
             # self.vy: frame gap between drops
@@ -54,7 +54,7 @@ class Block:
 
             if pyxel.btnp(pyxel.KEY_LEFT, 10, 1):
                 self.x = max(0, self.x - 4)
-            
+
             if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1):
                 self.x = min(self.x + 4, pyxel.width - self.width)
 
@@ -78,7 +78,7 @@ class App:
         [60, 12, 8],  # T
         [72, 12, 8]   # Z
     ]
-   
+
     def __init__(self):
         """
             - inits the window
@@ -114,7 +114,7 @@ class App:
             pyxel.quit()
 
     def draw(self):
-        
+
         # clear screen w/ black
         pyxel.cls(0)
 
@@ -122,13 +122,10 @@ class App:
             pyxel.blt(block.x, block.y, 0, block.u, 0, block.width, block.height, 0)
 
 
-
-
 ##################
 #    run baby    #
 ##################
 
 if __name__ == '__main__':
-    
-    App()
 
+    App()
