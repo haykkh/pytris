@@ -57,16 +57,16 @@ class Block:
         self.color = randrange(2, 15)
 
         # Add block to posMap
-        mapAdd(self, posMap)
+        mapAdd(self, theFallen)
 
         self.frame = pyxel.frame_count
 
     def drop(self):
         """Drops block 4 pixels if frame_count is a multiple of self.vy"""
         if (pyxel.frame_count % self.vy) == 0:
-            mapDel(self, posMap)
+            mapDel(self, theFallen)
             self.y = (self.y + 1)
-            mapAdd(self, posMap)
+            mapAdd(self, theFallen)
 
     def keyLeft(self):
         """Moves left
@@ -74,20 +74,20 @@ class Block:
             if left key pressed & block can move left, move left
 
         """
-        if pyxel.btnp(pyxel.KEY_LEFT, 10, 1) and not mapCheck(self, posMap, -1, 0):
-            mapDel(self, posMap)
+        if pyxel.btnp(pyxel.KEY_LEFT, 10, 1) and not mapCheck(self, theFallen, -1, 0):
+            mapDel(self, theFallen)
             self.x = max(-self.left, self.x - 1)
-            mapAdd(self, posMap)
+            mapAdd(self, theFallen)
 
     def keyRight(self):
         """Moves right
 
             if right key pressed & block can move right, move right
         """
-        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, posMap, 1, 0):
-            mapDel(self, posMap)
+        if pyxel.btnp(pyxel.KEY_RIGHT, 10, 1) and not mapCheck(self, theFallen, 1, 0):
+            mapDel(self, theFallen)
             self.x = min(self.x + 1,  -self.left + (pyxel.width - self.width) // 4)
-            mapAdd(self, posMap)
+            mapAdd(self, theFallen)
 
     def rotater(self, direction):
         """Rotates in direction (unless 'O' block)
@@ -98,9 +98,9 @@ class Block:
                                     anti-clockwise ->  1
         """
         if self.center:
-            mapDel(self, posMap)
+            mapDel(self, theFallen)
             rotate(self, direction)
-            mapAdd(self, posMap)
+            mapAdd(self, theFallen)
 
     def keyUp(self):
         """Rotate clockwise if up key pressed"""
@@ -124,7 +124,7 @@ class Block:
                 then -> not falling
         """
 
-        if ((((self.y + self.top) * 4) + self.height) < pyxel.height) and not mapCheck(self, posMap, 0, 1):
+        if ((((self.y + self.top) * 4) + self.height) < pyxel.height) and not mapCheck(self, theFallen, 0, 1):
 
             self.drop()
 
@@ -148,17 +148,19 @@ class Block:
                 self.keyUp()
                 self.keyZ()
             else:
+                self.coords = []
                 self.falling = False
+                clear()
 
     def draw(self):
         """Draws blocks rectangle by rectangle (from self.rects)"""
-        for (x, y) in self.coords:
-            pyxel.rect(
-                (x + self.x) * 4,
-                (y + self.y) * 4,
-                (x + self.x) * 4 + 3,
-                (y + self.y) * 4 + 3,
-                self.color)
+        #for (x, y) in self.coords:
+        #    pyxel.rect(
+        #        (x + self.x) * 4,
+        #        (y + self.y) * 4,
+        #        (x + self.x) * 4 + 3,
+        #        (y + self.y) * 4 + 3,
+        #        self.color)
 
 
 class App:
@@ -179,41 +181,51 @@ class App:
         self.bag = sample(list(range(7)), 7)
 
         # generates a block from last element of self.bag into self.blocks
-        self.blocks = [Block(blockData[self.bag.pop()])]
+        self.block = Block(blockData[self.bag.pop()])
 
         pyxel.run(self.update, self.draw)
 
     def update(self):
 
         # generates a new block if last block has stopped falling
-        if not self.blocks[-1].falling:
+        if not self.block.falling:
 
             # if self.bag empty, generate new bag
             if not self.bag:
                 self.bag = sample(list(range(7)), 7)
 
             # generate new block
-            self.blocks.append(Block(blockData[self.bag.pop()]))
+            self.block = Block(blockData[self.bag.pop()])
 
             # set it to fall
-            self.blocks[-1].falling = True
+            self.block.falling = True
 
         # update all blocks
-        for block in self.blocks:
-            block.update()
+        self.block.update()
 
         # if key 'q' is pressed, quit
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
+
+    def drawTheFallen(self):
+        for j in range(len(theFallen)):
+            for i in range(len(theFallen[j])):
+                if theFallen[j][i]:
+                    pyxel.rect(
+                        i * 4,
+                        j * 4,
+                        (i * 4) + 3,
+                        (j * 4) + 3,
+                        theFallen[j][i])
 
     def draw(self):
 
         # clear screen w/ black
         pyxel.cls(0)
 
+        self.drawTheFallen()
+
         # draw all blocks
-        for block in self.blocks:
-            block.draw()
 
 
 ################
@@ -275,12 +287,19 @@ blockData = [
 """ Map of window
 
     Starts off with all 0s
-    then updated to contain a 1 where a block is present
+    then updated to contain an int for color of block where one is present
 """
-posMap = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight // 4)]
+theFallen = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight // 4)]
 
 
-def mapCheck(block, posMap, changeX, changeY):
+def clear():
+    for row in range(len(theFallen)):
+        if 0 not in theFallen[row]:
+            for rowTop in range(row, 1, -1):
+                theFallen[rowTop] = theFallen[rowTop - 1]
+
+
+def mapCheck(block, appAttribute, changeX, changeY):
     """ Checks if moving block to new position (+changeX, +changeY)
         will clash with existing block
 
@@ -294,36 +313,36 @@ def mapCheck(block, posMap, changeX, changeY):
     """
 
     # remove block from posMap
-    mapDel(block, posMap)
+    mapDel(block, appAttribute)
     for (x, y) in block.coords:
 
         # check if there will not be index error
-        if x + block.x + changeX < len(posMap[0]) and y + block.y + changeY < len(posMap):
+        if x + block.x + changeX < len(appAttribute[0]) and y + block.y + changeY < len(appAttribute):
 
             """ if a block exists in (x + block.x + changeX, y + block.y + changeY)
                     add back to posMap
                     return True
             """
-            if posMap[y + block.y + changeY][x + block.x + changeX]:
-                mapAdd(block, posMap)
+            if appAttribute[y + block.y + changeY][x + block.x + changeX]:
+                mapAdd(block, appAttribute)
                 return True
         else:  # if index error -> return True
             return True
 
-    mapAdd(block, posMap)
+    mapAdd(block, appAttribute)
     return False
 
 
-def mapAdd(block, posMap):
+def mapAdd(block, appAttribute):
     """Adds block to posMap"""
     for (x, y) in block.coords:
-        posMap[y + block.y][x + block.x] = 1
+        appAttribute[y + block.y][x + block.x] = block.color
 
 
-def mapDel(block, posMap):
+def mapDel(block, appAttribute):
     """Removes block from posMap"""
     for (x, y) in block.coords:
-        posMap[y + block.y][x + block.x] = 0
+        appAttribute[y + block.y][x + block.x] = 0
 
 
 def rotate(block, direction):
