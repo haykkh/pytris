@@ -299,7 +299,7 @@ def clear():
                 theFallen[rowTop] = theFallen[rowTop - 1]
 
 
-def mapCheck(block, appAttribute, changeX, changeY):
+def mapCheck(block, posMap, changeX, changeY):
     """ Checks if moving block to new position (+changeX, +changeY)
         will clash with existing block
 
@@ -313,36 +313,36 @@ def mapCheck(block, appAttribute, changeX, changeY):
     """
 
     # remove block from posMap
-    mapDel(block, appAttribute)
+    mapDel(block, posMap)
     for (x, y) in block.coords:
 
         # check if there will not be index error
-        if x + block.x + changeX < len(appAttribute[0]) and y + block.y + changeY < len(appAttribute):
+        if x + block.x + changeX < len(posMap[0]) and y + block.y + changeY < len(posMap):
 
             """ if a block exists in (x + block.x + changeX, y + block.y + changeY)
                     add back to posMap
                     return True
             """
-            if appAttribute[y + block.y + changeY][x + block.x + changeX]:
-                mapAdd(block, appAttribute)
+            if posMap[y + block.y + changeY][x + block.x + changeX]:
+                mapAdd(block, posMap)
                 return True
         else:  # if index error -> return True
             return True
 
-    mapAdd(block, appAttribute)
+    mapAdd(block, posMap)
     return False
 
 
-def mapAdd(block, appAttribute):
+def mapAdd(block, posMap):
     """Adds block to posMap"""
     for (x, y) in block.coords:
-        appAttribute[y + block.y][x + block.x] = block.color
+        posMap[y + block.y][x + block.x] = block.color
 
 
-def mapDel(block, appAttribute):
+def mapDel(block, posMap):
     """Removes block from posMap"""
     for (x, y) in block.coords:
-        appAttribute[y + block.y][x + block.x] = 0
+        posMap[y + block.y][x + block.x] = 0
 
 
 def rotate(block, direction):
