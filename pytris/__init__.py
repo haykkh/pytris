@@ -293,10 +293,13 @@ theFallen = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight //
 
 
 def clear():
+    empty = [0 for _ in range(windowWidth // 4)]
+    lastEmpty = 0
     for row in range(len(theFallen)):
-        if 0 not in theFallen[row]:
-            for rowTop in range(row, 1, -1):
-                theFallen[rowTop] = theFallen[rowTop - 1]
+        if theFallen[row] == empty:
+            lastEmpty = row
+        elif 0 not in theFallen[row]:
+            theFallen[lastEmpty:row + 1] = theFallen[lastEmpty-1:row]
 
 
 def mapCheck(block, posMap, changeX, changeY):
