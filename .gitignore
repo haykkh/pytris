@@ -129,3 +129,5 @@ dmypy.json
 !.vscode/launch.json
 !.vscode/extensions.json
 .vscode/settings.json
+.vscode/launch.json
+pytris/.vscode/settings.json
