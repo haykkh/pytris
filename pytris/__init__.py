@@ -299,7 +299,8 @@ def clear():
         if theFallen[row] == empty:
             lastEmpty = row
         elif 0 not in theFallen[row]:
-            theFallen[lastEmpty:row + 1] = theFallen[lastEmpty-1:row]
+            theFallen.pop(row)
+            theFallen.insert(0, empty)
 
 
 def mapCheck(block, posMap, changeX, changeY):
