@@ -214,8 +214,8 @@ class App:
                     pyxel.rect(
                         i * 4,
                         j * 4,
-                        3,
-                        3,
+                        4,
+                        4,
                         theFallen[j][i])
 
     def draw(self):
