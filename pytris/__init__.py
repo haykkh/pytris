@@ -289,8 +289,11 @@ blockData = [
     Starts off with all 0s
     then updated to contain an int for color of block where one is present
 """
+
 theFallen = [[0 for _ in range(windowWidth // 4)] for _ in range(windowHeight // 4)]
 
+def theFallener(x, y, color, posMap):
+    posMap[y][x] = color
 
 def clear():
     empty = [0 for _ in range(windowWidth // 4)]
@@ -340,13 +343,13 @@ def mapCheck(block, posMap, changeX, changeY):
 def mapAdd(block, posMap):
     """Adds block to posMap"""
     for (x, y) in block.coords:
-        posMap[y + block.y][x + block.x] = block.color
+        theFallener(x + block.x, y + block.y, block.color, posMap)
 
 
 def mapDel(block, posMap):
     """Removes block from posMap"""
     for (x, y) in block.coords:
-        posMap[y + block.y][x + block.x] = 0
+        theFallener(x + block.x, y + block.y, 0, posMap)
 
 
 def rotate(block, direction):
