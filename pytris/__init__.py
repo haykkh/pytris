@@ -214,15 +214,14 @@ class App:
                     pyxel.rect(
                         i * 4,
                         j * 4,
-                        (i * 4) + 3,
-                        (j * 4) + 3,
+                        3,
+                        3,
                         theFallen[j][i])
 
     def draw(self):
 
         # clear screen w/ black
         pyxel.cls(0)
-
         self.drawTheFallen()
 
         # draw all blocks
